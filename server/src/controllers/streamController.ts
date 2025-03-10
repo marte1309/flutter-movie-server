@@ -5,13 +5,6 @@ import ffmpeg from "fluent-ffmpeg";
 import config from "../config";
 import { movies } from "../models/movie";
 
-// Configura rutas a los ejecutables de FFmpeg (ajusta según tu instalación)
-const ffmpegPath = process.env.FFMPEGPATH ?? "M:\\ffmpeg\\bin\\ffmpeg.exe";
-const ffprobePath = process.env.FFPROBEPATH ?? "M:\\ffmpeg\\bin\\ffprobe.exe";
-
-ffmpeg.setFfmpegPath(ffmpegPath);
-ffmpeg.setFfprobePath(ffprobePath);
-
 export const streamMovie = (req: Request, res: Response): void => {
   const id = parseInt(req.params.id, 10);
   const movie = movies.find((m) => m.id === id);
