@@ -8,7 +8,7 @@ import 'player_screen.dart';
 class MovieDetailScreen extends StatelessWidget {
   final Movie movie;
 
-  const MovieDetailScreen({Key? key, required this.movie}) : super(key: key);
+  const MovieDetailScreen({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {

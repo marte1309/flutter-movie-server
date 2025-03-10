@@ -10,7 +10,7 @@ import '../services/api_service.dart';
 class PlayerScreen extends StatefulWidget {
   final Movie movie;
 
-  const PlayerScreen({Key? key, required this.movie}) : super(key: key);
+  const PlayerScreen({super.key, required this.movie});
 
   @override
   _PlayerScreenState createState() => _PlayerScreenState();
