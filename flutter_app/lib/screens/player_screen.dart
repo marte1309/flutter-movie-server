@@ -37,8 +37,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   Future<void> _initializePlayer() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
+    print('Cargando video ${widget.movie.title}...');
     final streamUrl = apiService.getStreamUrl(widget.movie.id);
-
+    print('URL del stream: $streamUrl');
     _videoPlayerController = VideoPlayerController.networkUrl(streamUrl);
 
     try {

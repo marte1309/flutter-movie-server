@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'services/api_service.dart';
 
-void main() {
+void main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -20,7 +22,7 @@ class MyApp extends StatelessWidget {
         } catch (e) {
           print("Error al crear ApiService: $e");
           // Retorna una versión fallback o con una URL hardcodeada
-          return ApiService(baseUrl: 'http://192.168.101.101:8084/api');
+          return ApiService(baseUrl: 'http://192.168.101.102:8084/api');
         }
       },
       child: MaterialApp(
