@@ -39,7 +39,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     final apiService = Provider.of<ApiService>(context, listen: false);
     final streamUrl = apiService.getStreamUrl(widget.movie.id);
 
-    _videoPlayerController = VideoPlayerController.network(streamUrl);
+    _videoPlayerController = VideoPlayerController.networkUrl(streamUrl);
 
     try {
       await _videoPlayerController.initialize();

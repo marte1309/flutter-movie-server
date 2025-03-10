@@ -33,8 +33,8 @@ class ApiService {
     }
   }
 
-  String getStreamUrl(int movieId) {
-    return '$baseUrl/stream/$movieId';
+  Uri getStreamUrl(int movieId) {
+    return Uri.parse('$baseUrl/stream/$movieId');
   }
 
   String getThumbnailUrl(int movieId) {
