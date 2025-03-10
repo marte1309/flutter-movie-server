@@ -13,7 +13,7 @@ class PlayerScreen extends StatefulWidget {
   const PlayerScreen({super.key, required this.movie});
 
   @override
-  _PlayerScreenState createState() => _PlayerScreenState();
+  State<PlayerScreen> createState() => _PlayerScreenState();
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
