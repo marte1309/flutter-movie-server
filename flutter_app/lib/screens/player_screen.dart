@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 import '../models/movie.dart';
 import '../services/api_service.dart';
+import '../services/device_service.dart';
 
 class PlayerScreen extends StatefulWidget {
   final Movie movie;
@@ -26,13 +27,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void initState() {
     super.initState();
     _initializePlayer();
-    // Poner en modo inmersivo
+    // Solo ocultar la UI del sistema, pero no forzar orientación aquí
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    // Forzar modo horizontal
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+
+    // Si no estamos en TV, sí forzamos landscape solo durante la reproducción
+    if (!DeviceService.isTV(context)) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
   }
 
   Future<void> _initializePlayer() async {
@@ -76,12 +80,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   void dispose() {
-    // Restaurar UI y orientación al salir
+    // Restaurar UI
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+
+    // Si no estamos en TV, restauramos portrait al salir
+    if (!DeviceService.isTV(context)) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
 
     _videoPlayerController.dispose();
     _chewieController?.dispose();

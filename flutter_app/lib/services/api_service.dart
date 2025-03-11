@@ -10,7 +10,7 @@ class ApiService {
   ApiService({String? baseUrl})
       : baseUrl = baseUrl ??
             dotenv.env['API_URL'] ??
-            'http://192.168.101.102:8084/api';
+            'http://192.168.101.106:8084/api';
 
   Future<List<Movie>> getMovies() async {
     final response = await http.get(Uri.parse('$baseUrl/movies'));

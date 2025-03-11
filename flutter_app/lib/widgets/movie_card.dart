@@ -23,8 +23,8 @@ class MovieCard extends StatelessWidget {
       // Cambiado de GestureDetector a InkWell
       onTap: onTap,
       focusColor: Theme.of(context)
-          .primaryColor
-          .withValues(alpha: 0.0), // Color cuando está enfocado
+          .focusColor
+          .withValues(alpha: 0.3), // Color cuando está enfocado
       autofocus: movie.id == 1, // Autofocus al primer elemento
       child: Card(
         elevation: 4,
