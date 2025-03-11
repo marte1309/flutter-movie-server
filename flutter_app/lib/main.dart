@@ -35,6 +35,7 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.indigo,
             brightness: Brightness.dark,
             visualDensity: VisualDensity.adaptivePlatformDensity,
+            focusColor: Colors.indigo[300],
           ),
           home: const OrientationHandler(child: HomeScreen()),
         ));

@@ -20,7 +20,7 @@ class MovieCard extends StatelessWidget {
     final thumbnailUrl = apiService.getThumbnailUrl(movie.id);
 
     return InkWell(
-      // Cambiado de GestureDetector a InkWell
+      borderRadius: BorderRadius.circular(15.0),
       onTap: onTap,
       focusColor: Theme.of(context)
           .focusColor
@@ -34,9 +34,7 @@ class MovieCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: double.infinity,
-              height: 80,
+            Expanded(
               child: Image.network(
                 thumbnailUrl,
                 fit: BoxFit.cover,

@@ -28,13 +28,17 @@ class _PlayerScreenState extends State<PlayerScreen> {
     _initializePlayer();
     // Solo ocultar la UI del sistema, pero no forzar orientación aquí
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+    // Forzar orientación horizontal
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
   }
 
   Future<void> _initializePlayer() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    print('Cargando video ${widget.movie.title}...');
     final streamUrl = apiService.getStreamUrl(widget.movie.id);
-    print('URL del stream: $streamUrl');
     _videoPlayerController = VideoPlayerController.networkUrl(streamUrl);
 
     try {
