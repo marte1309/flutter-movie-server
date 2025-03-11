@@ -1,0 +1,2 @@
+P:/Marianosoft/flutter-movie-server/flutter_app/android/app/.cxx/Debug/w373z8m3/x86/CMakeFiles/edit_cache.dir
+P:/Marianosoft/flutter-movie-server/flutter_app/android/app/.cxx/Debug/w373z8m3/x86/CMakeFiles/rebuild_cache.dir

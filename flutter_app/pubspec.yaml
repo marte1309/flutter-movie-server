@@ -1,5 +1,5 @@
-name: flutter_app
-description: "A new Flutter project."
+name: mmovies
+description: "MRD Movies"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
@@ -40,6 +40,7 @@ dependencies:
   provider: ^6.1.2
   chewie: ^1.10.0
   path_provider: ^2.1.5
+  wakelock_plus: ^1.2.10
 
 dev_dependencies:
   flutter_test:

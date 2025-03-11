@@ -1,4 +1,4 @@
-// lib/widgets/movie_card.dart
+// Modificación de lib/widgets/movie_card.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/movie.dart';
@@ -14,14 +14,18 @@ class MovieCard extends StatelessWidget {
     required this.onTap,
   }) : super(key: key);
 
-  // lib/widgets/movie_card.dart (continuación)
   @override
   Widget build(BuildContext context) {
     final apiService = Provider.of<ApiService>(context);
     final thumbnailUrl = apiService.getThumbnailUrl(movie.id);
 
-    return GestureDetector(
+    return InkWell(
+      // Cambiado de GestureDetector a InkWell
       onTap: onTap,
+      focusColor: Theme.of(context)
+          .primaryColor
+          .withOpacity(0.4), // Color cuando está enfocado
+      autofocus: movie.id == 1, // Autofocus al primer elemento
       child: Card(
         elevation: 4,
         clipBehavior: Clip.antiAlias,
