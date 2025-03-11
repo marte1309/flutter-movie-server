@@ -1,16 +1,21 @@
 // lib/services/api_service.dart
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/movie.dart';
 
 class ApiService {
   final String baseUrl;
+  late http.Client _httpClient;
 
   ApiService({String? baseUrl})
       : baseUrl = baseUrl ??
             dotenv.env['API_URL'] ??
-            'http://192.168.101.106:8084/api';
+            'https://192.168.101.100:8084/api' {
+    HttpOverrides.global = MyHttpOverrides();
+    _httpClient = http.Client();
+  }
 
   Future<List<Movie>> getMovies() async {
     final response = await http.get(Uri.parse('$baseUrl/movies'));
@@ -50,5 +55,15 @@ class ApiService {
     if (response.statusCode != 200) {
       throw Exception('Failed to scan for movies');
     }
+  }
+}
+
+// Clase para aceptar certificados autofirmados en desarrollo
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }
