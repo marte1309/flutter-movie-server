@@ -24,7 +24,7 @@ class MovieCard extends StatelessWidget {
       onTap: onTap,
       focusColor: Theme.of(context)
           .primaryColor
-          .withOpacity(0.4), // Color cuando está enfocado
+          .withValues(alpha: 0.0), // Color cuando está enfocado
       autofocus: movie.id == 1, // Autofocus al primer elemento
       child: Card(
         elevation: 4,
