@@ -66,7 +66,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
     try {
       // Intenta primero con el video original
       final streamUrl = apiService.getStreamUrl(widget.movie.id);
-      _videoPlayerController = VideoPlayerController.networkUrl(streamUrl);
+      _videoPlayerController = VideoPlayerController.networkUrl(streamUrl,
+          videoPlayerOptions: VideoPlayerOptions(
+            mixWithOthers: true,
+            allowBackgroundPlayback: false,
+          ),
+          httpHeaders: {'Accept': 'video/mp4,video/*;q=0.9,*/*;q=0.8'});
       await _videoPlayerController.initialize();
 
       _configureChewieController();
@@ -85,22 +90,19 @@ class _PlayerScreenState extends State<PlayerScreen> {
         await _videoPlayerController.initialize();
 
         _configureChewieController();
+
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error on Movies: $e')),
+        );
       } catch (e) {
         setState(() {
           _hasError = true;
         });
         // Mostrar mensaje de error
-        AlertDialog(
-          title: Text('Error'),
-          content: Text('No se pudo cargar el video: $e'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cerrar'),
-            ),
-          ],
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error on Movies: $e')),
         );
       }
     }

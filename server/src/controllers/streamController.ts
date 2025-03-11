@@ -16,39 +16,43 @@ export const streamMovie = (req: Request, res: Response): void => {
 
   const moviePath = path.join(config.MOVIES_DIR, movie.path);
 
-  const shouldTranscode = req.query.transcode === "true";
-
   if (!fs.existsSync(moviePath)) {
     res.status(404).json({ message: "Archivo de película no encontrado" });
     return;
   }
 
-  if (shouldTranscode) {
-    // Establecer headers para streaming
-    res.setHeader("Content-Type", "video/mp4");
-    res.setHeader("Accept-Ranges", "none"); // No soportamos range en transcodificación
+  // Verificar si se debe transcodificar para Android TV
+  const shouldTranscode = req.query.transcode === "true";
 
-    // Transcodificar usando FFmpeg para hacerlo más compatible
+  if (shouldTranscode) {
+    // Para transcodificación, establecemos los headers una sola vez antes de iniciar el flujo
+    res.setHeader("Content-Type", "video/mp4");
+
+    // Configurar la transcodificación para Android TV
     ffmpeg(moviePath)
       .outputFormat("mp4")
       .videoCodec("libx264")
       .videoBitrate("1500k")
-      .size("1280x720") // Reducir a 720p para mejor compatibilidad
+      .size("1280x720")
       .audioCodec("aac")
       .audioBitrate("128k")
       .outputOptions([
-        "-preset ultrafast", // Mayor velocidad de procesamiento
-        "-tune fastdecode", // Optimizar para decodificación rápida
-        "-movflags frag_keyframe+empty_moov+faststart", // Optimizar para streaming
-        "-profile:v baseline", // Perfil más compatible
-        "-level 3.0", // Nivel más compatible
+        "-preset ultrafast",
+        "-tune fastdecode",
+        "-movflags frag_keyframe+empty_moov+faststart",
+        "-profile:v baseline",
+        "-level 3.0",
       ])
+      .on("start", (cmd) => {
+        console.log("Iniciando transcodificación:", cmd);
+      })
       .on("error", (err) => {
         console.error("Error en transcodificación:", err);
-        res.status(500).send("Error al procesar el video");
+        // No enviamos respuesta de error aquí si ya comenzamos a transmitir
       })
       .pipe(res, { end: true });
   } else {
+    // El código original para streaming directo
     const stat = fs.statSync(moviePath);
     const fileSize = stat.size;
     const range = req.headers.range;
