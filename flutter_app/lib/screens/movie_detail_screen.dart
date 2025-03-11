@@ -37,7 +37,7 @@ class MovieDetailScreen extends StatelessWidget {
                         child: Center(
                           child: Icon(
                             Icons.movie,
-                            size: 80,
+                            size: 50,
                             color: Colors.white54,
                           ),
                         ),
