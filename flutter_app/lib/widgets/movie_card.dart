@@ -25,53 +25,33 @@ class MovieCard extends StatelessWidget {
       focusColor: Theme.of(context)
           .focusColor
           .withValues(alpha: 0.3), // Color cuando está enfocado
-      autofocus: movie.id == 1, // Autofocus al primer elemento
       child: Card(
-        elevation: 4,
+        elevation: 10,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(15.0),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.network(
-                    thumbnailUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[800],
-                        child: Center(
-                          child: Icon(
-                            Icons.movie,
-                            size: 50,
-                            color: Colors.white54,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      color: Colors.black54,
-                      child: Text(
-                        movie.format.toUpperCase(),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
+            SizedBox(
+              width: 200,
+              height: 60,
+              child: Image.network(
+                thumbnailUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[800],
+                    child: Center(
+                      child: Icon(
+                        Icons.movie,
+                        size: 50,
+                        color: Colors.white54,
                       ),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
             Padding(

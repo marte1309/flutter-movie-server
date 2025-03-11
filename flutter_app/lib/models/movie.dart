@@ -5,6 +5,8 @@ class Movie {
   final String path;
   final String format;
   final DateTime addedAt;
+  final int? duration;
+  final int? year;
 
   Movie({
     required this.id,
@@ -12,6 +14,8 @@ class Movie {
     required this.path,
     required this.format,
     required this.addedAt,
+    this.duration = 0,
+    this.year = 0,
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {

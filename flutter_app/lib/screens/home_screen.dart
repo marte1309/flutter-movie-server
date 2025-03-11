@@ -55,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
-            onPressed: _refreshMovies,
+            onPressed: _scanForMovies,
           ),
           IconButton(
             icon: Icon(Icons.search),
@@ -105,8 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
           return GridView.builder(
             padding: EdgeInsets.all(16.0),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.7,
+              crossAxisCount: 3,
+              childAspectRatio: 0.8,
               crossAxisSpacing: 16.0,
               mainAxisSpacing: 16.0,
             ),
@@ -116,6 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return Focus(
                 onFocusChange: (hasFocus) {
                   // Opcional: hacer algo cuando cambia el foco
+                  print('Foco: $hasFocus, película: ${movie.title}');
                 },
                 child: MovieCard(
                   movie: movie,
@@ -132,11 +133,6 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _scanForMovies,
-        tooltip: 'Escanear películas',
-        child: Icon(Icons.sync),
       ),
     );
   }

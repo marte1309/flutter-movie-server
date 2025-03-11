@@ -23,47 +23,38 @@ class MovieDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.network(
-                    thumbnailUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[800],
-                        child: Center(
-                          child: Icon(
-                            Icons.movie,
-                            size: 50,
-                            color: Colors.white54,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  Center(
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.play_circle_fill,
-                        size: 80,
-                        color: Colors.white.withValues(alpha: 0.3),
+            Row(children: [
+              Image.network(
+                thumbnailUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[800],
+                    child: Center(
+                      child: Icon(
+                        Icons.movie,
+                        size: 50,
+                        color: Colors.white54,
                       ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PlayerScreen(movie: movie),
-                          ),
-                        );
-                      },
                     ),
+                  );
+                },
+              ),
+              SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Duración: ${movie.duration} min',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  Text(
+                    'Año: ${movie.year}',
+                    style: TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
-            ),
+            ]),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
