@@ -33,7 +33,10 @@ class ApiService {
     }
   }
 
-  Uri getStreamUrl(int movieId) {
+  Uri getStreamUrl(int movieId, {bool transcode = false}) {
+    if (transcode) {
+      return Uri.parse('$baseUrl/stream/$movieId?transcode=true');
+    }
     return Uri.parse('$baseUrl/stream/$movieId');
   }
 

@@ -16,38 +16,67 @@ export const streamMovie = (req: Request, res: Response): void => {
 
   const moviePath = path.join(config.MOVIES_DIR, movie.path);
 
+  const shouldTranscode = req.query.transcode === "true";
+
   if (!fs.existsSync(moviePath)) {
     res.status(404).json({ message: "Archivo de película no encontrado" });
     return;
   }
 
-  const stat = fs.statSync(moviePath);
-  const fileSize = stat.size;
-  const range = req.headers.range;
+  if (shouldTranscode) {
+    // Establecer headers para streaming
+    res.setHeader("Content-Type", "video/mp4");
+    res.setHeader("Accept-Ranges", "none"); // No soportamos range en transcodificación
 
-  if (range) {
-    const parts = range.replace(/bytes=/, "").split("-");
-    const start = parseInt(parts[0], 10);
-    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-    const chunksize = end - start + 1;
-    const file = fs.createReadStream(moviePath, { start, end });
-    const head = {
-      "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-      "Accept-Ranges": "bytes",
-      "Content-Length": chunksize,
-      "Content-Type": "video/mp4",
-    };
-
-    res.writeHead(206, head);
-    file.pipe(res);
+    // Transcodificar usando FFmpeg para hacerlo más compatible
+    ffmpeg(moviePath)
+      .outputFormat("mp4")
+      .videoCodec("libx264")
+      .videoBitrate("1500k")
+      .size("1280x720") // Reducir a 720p para mejor compatibilidad
+      .audioCodec("aac")
+      .audioBitrate("128k")
+      .outputOptions([
+        "-preset ultrafast", // Mayor velocidad de procesamiento
+        "-tune fastdecode", // Optimizar para decodificación rápida
+        "-movflags frag_keyframe+empty_moov+faststart", // Optimizar para streaming
+        "-profile:v baseline", // Perfil más compatible
+        "-level 3.0", // Nivel más compatible
+      ])
+      .on("error", (err) => {
+        console.error("Error en transcodificación:", err);
+        res.status(500).send("Error al procesar el video");
+      })
+      .pipe(res, { end: true });
   } else {
-    const head = {
-      "Content-Length": fileSize,
-      "Content-Type": "video/mp4",
-    };
+    const stat = fs.statSync(moviePath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
 
-    res.writeHead(200, head);
-    fs.createReadStream(moviePath).pipe(res);
+    if (range) {
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunksize = end - start + 1;
+      const file = fs.createReadStream(moviePath, { start, end });
+      const head = {
+        "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+        "Accept-Ranges": "bytes",
+        "Content-Length": chunksize,
+        "Content-Type": "video/mp4",
+      };
+
+      res.writeHead(206, head);
+      file.pipe(res);
+    } else {
+      const head = {
+        "Content-Length": fileSize,
+        "Content-Type": "video/mp4",
+      };
+
+      res.writeHead(200, head);
+      fs.createReadStream(moviePath).pipe(res);
+    }
   }
 };
 

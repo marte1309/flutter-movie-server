@@ -36,40 +36,73 @@ class _PlayerScreenState extends State<PlayerScreen> {
     ]);
   }
 
+  void _configureChewieController() {
+    _chewieController = ChewieController(
+      videoPlayerController: _videoPlayerController,
+      autoPlay: true,
+      looping: false,
+      allowFullScreen: true,
+      allowMuting: true,
+      showControls: true,
+      aspectRatio: _videoPlayerController.value.aspectRatio,
+      errorBuilder: (context, errorMessage) {
+        return Center(
+          child: Text(
+            'Error: $errorMessage',
+            style: TextStyle(color: Colors.white),
+          ),
+        );
+      },
+    );
+
+    setState(() {
+      _isInitialized = true;
+    });
+  }
+
   Future<void> _initializePlayer() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    final streamUrl = apiService.getStreamUrl(widget.movie.id);
-    _videoPlayerController = VideoPlayerController.networkUrl(streamUrl);
 
     try {
+      // Intenta primero con el video original
+      final streamUrl = apiService.getStreamUrl(widget.movie.id);
+      _videoPlayerController = VideoPlayerController.networkUrl(streamUrl);
       await _videoPlayerController.initialize();
 
-      _chewieController = ChewieController(
-        videoPlayerController: _videoPlayerController,
-        autoPlay: true,
-        looping: false,
-        allowFullScreen: true,
-        allowMuting: true,
-        showControls: true,
-        aspectRatio: _videoPlayerController.value.aspectRatio,
-        errorBuilder: (context, errorMessage) {
-          return Center(
-            child: Text(
-              'Error: $errorMessage',
-              style: TextStyle(color: Colors.white),
-            ),
-          );
-        },
-      );
-
-      setState(() {
-        _isInitialized = true;
-      });
+      _configureChewieController();
     } catch (e) {
-      setState(() {
-        _hasError = true;
-      });
-      print('Error al inicializar el reproductor: $e');
+      print('Error con video original: $e');
+
+      // Si falla, intenta con video transcodificado
+      try {
+        // Limpiar el controlador anterior
+        await _videoPlayerController.dispose();
+
+        final transcodedUrl =
+            apiService.getStreamUrl(widget.movie.id, transcode: true);
+        _videoPlayerController =
+            VideoPlayerController.networkUrl(transcodedUrl);
+        await _videoPlayerController.initialize();
+
+        _configureChewieController();
+      } catch (e) {
+        setState(() {
+          _hasError = true;
+        });
+        // Mostrar mensaje de error
+        AlertDialog(
+          title: Text('Error'),
+          content: Text('No se pudo cargar el video: $e'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cerrar'),
+            ),
+          ],
+        );
+      }
     }
   }
 
@@ -77,6 +110,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void dispose() {
     // Restaurar UI
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+    // Restaurar orientación
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
 
     _videoPlayerController.dispose();
     _chewieController?.dispose();
