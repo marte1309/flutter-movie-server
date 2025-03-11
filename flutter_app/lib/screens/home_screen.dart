@@ -113,22 +113,16 @@ class _HomeScreenState extends State<HomeScreen> {
             itemCount: movies.length,
             itemBuilder: (context, index) {
               final movie = movies[index];
-              return Focus(
-                onFocusChange: (hasFocus) {
-                  // Opcional: hacer algo cuando cambia el foco
-                  print('Foco: $hasFocus, película: ${movie.title}');
+              return MovieCard(
+                movie: movie,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MovieDetailScreen(movie: movie),
+                    ),
+                  );
                 },
-                child: MovieCard(
-                  movie: movie,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MovieDetailScreen(movie: movie),
-                      ),
-                    );
-                  },
-                ),
               );
             },
           );

@@ -35,8 +35,8 @@ class MovieCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 200,
-              height: 60,
+              width: double.infinity,
+              height: 80,
               child: Image.network(
                 thumbnailUrl,
                 fit: BoxFit.cover,
@@ -55,7 +55,7 @@ class MovieCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(5.0),
               child: Text(
                 movie.title,
                 maxLines: 2,
