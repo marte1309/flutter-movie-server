@@ -49,7 +49,7 @@ class MovieDetailScreen extends StatelessWidget {
                       icon: Icon(
                         Icons.play_circle_fill,
                         size: 80,
-                        color: Colors.white.withValues(alpha: 0.0),
+                        color: Colors.white.withValues(alpha: 0.3),
                       ),
                       onPressed: () {
                         Navigator.push(

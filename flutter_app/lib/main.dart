@@ -54,21 +54,39 @@ class OrientationHandler extends StatefulWidget {
 }
 
 class _OrientationHandlerState extends State<OrientationHandler> {
+  bool _isInitialized = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _setOrientation();
+    if (!_isInitialized) {
+      _setOrientation();
+      _isInitialized = true;
+    }
   }
 
-  void _setOrientation() {
-    if (DeviceService.isTV(context)) {
-      // Para TV, preferimos formato landscape
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-    } else {
-      // Para celulares, formato portrait
+  Future<void> _setOrientation() async {
+    try {
+      final isTV = await DeviceService.isTV(context);
+
+      if (isTV) {
+        // Para TV, preferimos formato landscape
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]);
+        print('Estableciendo orientación de TV (landscape)');
+      } else {
+        // Para celulares, formato portrait
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+        print('Estableciendo orientación de celular (portrait)');
+      }
+    } catch (e) {
+      print('Error al establecer orientación: $e');
+      // Configuración por defecto en caso de error
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
