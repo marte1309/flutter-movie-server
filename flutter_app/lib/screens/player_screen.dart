@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:chewie/chewie.dart';
 import '../models/movie.dart';
 import '../services/api_service.dart';
+import '../widgets/custom_video_player.dart';
+import 'dart:async';
 
 class PlayerScreen extends StatefulWidget {
   final Movie movie;
@@ -18,46 +19,24 @@ class PlayerScreen extends StatefulWidget {
 
 class _PlayerScreenState extends State<PlayerScreen> {
   late VideoPlayerController _videoPlayerController;
-  ChewieController? _chewieController;
   bool _isInitialized = false;
   bool _hasError = false;
+  String _errorMessage = '';
+
+  // Simulación de una lista de episodios para la navegación
+  int _currentEpisodeIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _initializePlayer();
-    // Solo ocultar la UI del sistema, pero no forzar orientación aquí
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    // Forzar orientación horizontal
+    // Ocultar la UI del sistema y forzar orientación horizontal
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-  }
-
-  void _configureChewieController() {
-    _chewieController = ChewieController(
-      videoPlayerController: _videoPlayerController,
-      autoPlay: true,
-      looping: false,
-      allowFullScreen: true,
-      allowMuting: true,
-      showControls: true,
-      aspectRatio: _videoPlayerController.value.aspectRatio,
-      errorBuilder: (context, errorMessage) {
-        return Center(
-          child: Text(
-            'Error: $errorMessage',
-            style: TextStyle(color: Colors.white),
-          ),
-        );
-      },
-    );
-
-    setState(() {
-      _isInitialized = true;
-    });
   }
 
   Future<void> _initializePlayer() async {
@@ -66,15 +45,20 @@ class _PlayerScreenState extends State<PlayerScreen> {
     try {
       // Intenta primero con el video original
       final streamUrl = apiService.getStreamUrl(widget.movie.id);
-      _videoPlayerController = VideoPlayerController.networkUrl(streamUrl,
-          videoPlayerOptions: VideoPlayerOptions(
-            mixWithOthers: true,
-            allowBackgroundPlayback: false,
-          ),
-          httpHeaders: {'Accept': 'video/mp4,video/*;q=0.9,*/*;q=0.8'});
+      _videoPlayerController = VideoPlayerController.networkUrl(
+        streamUrl,
+        httpHeaders: {
+          'Accept-Ranges': 'bytes',
+        },
+      );
+
       await _videoPlayerController.initialize();
 
-      _configureChewieController();
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
     } catch (e) {
       print('Error con video original: $e');
 
@@ -89,35 +73,90 @@ class _PlayerScreenState extends State<PlayerScreen> {
             VideoPlayerController.networkUrl(transcodedUrl);
         await _videoPlayerController.initialize();
 
-        _configureChewieController();
-
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error on Movies: $e')),
-        );
+        if (mounted) {
+          setState(() {
+            _isInitialized = true;
+          });
+        }
       } catch (e) {
-        setState(() {
-          _hasError = true;
-        });
-        // Mostrar mensaje de error
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error on Movies: $e')),
-        );
+        print('Error en reproductor: $e');
+        if (mounted) {
+          setState(() {
+            _hasError = true;
+            _errorMessage = e.toString();
+          });
+        }
       }
     }
   }
 
+  void _handleNextEpisode() {
+    // En una implementación real, aquí cargarías el siguiente episodio
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Siguiente episodio no disponible'),
+      duration: Duration(seconds: 2),
+    ));
+
+    // Simulación - incrementar el índice actual
+    setState(() {
+      _currentEpisodeIndex++;
+    });
+
+    // Ejemplo de cómo se podría implementar
+    /*
+    if (_currentEpisodeIndex < episodesList.length - 1) {
+      setState(() {
+        _currentEpisodeIndex++;
+        _isInitialized = false;
+      });
+      
+      // Liberar recursos del controlador actual
+      _videoPlayerController.dispose();
+      
+      // Cargar el nuevo episodio
+      _loadEpisode(episodesList[_currentEpisodeIndex]);
+    }
+    */
+  }
+
+  void _handlePreviousEpisode() {
+    // En una implementación real, aquí cargarías el episodio anterior
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Episodio anterior no disponible'),
+      duration: Duration(seconds: 2),
+    ));
+
+    // Simulación - decrementar el índice actual
+    setState(() {
+      if (_currentEpisodeIndex > 0) {
+        _currentEpisodeIndex--;
+      }
+    });
+
+    // Ejemplo de cómo se podría implementar
+    /*
+    if (_currentEpisodeIndex > 0) {
+      setState(() {
+        _currentEpisodeIndex--;
+        _isInitialized = false;
+      });
+      
+      // Liberar recursos del controlador actual
+      _videoPlayerController.dispose();
+      
+      // Cargar el nuevo episodio
+      _loadEpisode(episodesList[_currentEpisodeIndex]);
+    }
+    */
+  }
+
   @override
   void dispose() {
-    // Restaurar UI
+    // Restaurar UI y orientación
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-
-    // Restaurar orientación
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
 
     _videoPlayerController.dispose();
-    _chewieController?.dispose();
     super.dispose();
   }
 
@@ -131,7 +170,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ? _buildErrorWidget()
               : !_isInitialized
                   ? _buildLoadingWidget()
-                  : Chewie(controller: _chewieController!),
+                  : CustomVideoPlayer(
+                      controller: _videoPlayerController,
+                      autoPlay: true,
+                      onVideoEnd: () {
+                        // Regresar a la pantalla anterior cuando termina el video
+                        Navigator.of(context).pop();
+                      },
+                      onNextEpisode: _handleNextEpisode,
+                      onPreviousEpisode: _handlePreviousEpisode,
+                    ),
         ),
       ),
     );
@@ -141,7 +189,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        CircularProgressIndicator(),
+        CircularProgressIndicator(color: Colors.white),
         SizedBox(height: 20),
         Text(
           'Cargando ${widget.movie.title}...',
@@ -161,11 +209,21 @@ class _PlayerScreenState extends State<PlayerScreen> {
           'Error al cargar el video',
           style: TextStyle(color: Colors.white, fontSize: 18),
         ),
+        if (_errorMessage.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              _errorMessage,
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ),
         SizedBox(height: 20),
         ElevatedButton(
           onPressed: () {
             setState(() {
               _hasError = false;
+              _errorMessage = '';
               _initializePlayer();
             });
           },
@@ -177,6 +235,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             Navigator.pop(context);
           },
           child: Text('Volver'),
+          style: TextButton.styleFrom(foregroundColor: Colors.white),
         ),
       ],
     );

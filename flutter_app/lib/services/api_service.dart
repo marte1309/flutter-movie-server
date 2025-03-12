@@ -12,10 +12,7 @@ class ApiService {
   ApiService({String? baseUrl})
       : baseUrl = baseUrl ??
             dotenv.env['API_URL'] ??
-            'https://192.168.101.100:8084/api' {
-    HttpOverrides.global = MyHttpOverrides();
-    _httpClient = http.Client();
-  }
+            'http://192.168.101.100:8084/api';
 
   Future<List<Movie>> getMovies() async {
     final response = await http.get(Uri.parse('$baseUrl/movies'));
@@ -55,15 +52,5 @@ class ApiService {
     if (response.statusCode != 200) {
       throw Exception('Failed to scan for movies');
     }
-  }
-}
-
-// Clase para aceptar certificados autofirmados en desarrollo
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
   }
 }
