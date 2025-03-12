@@ -62,36 +62,51 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   Future<void> _initializePlayer() async {
     final apiService = Provider.of<ApiService>(context, listen: false);
-    print('Cargando video ${widget.movie.title}...');
-    final streamUrl = apiService.getStreamUrl(widget.movie.id);
-    print('URL del stream: $streamUrl');
-
-    // Modificar la url para indicar que aceptamos conexiones inseguras
-    // Si tu URL comienza con https://
-    final videoUrl = streamUrl.toString().replaceAll('https://', 'http://');
-
-    _videoPlayerController = VideoPlayerController.networkUrl(
-      Uri.parse(videoUrl),
-      httpHeaders: {
-        // Añadir headers adicionales si son necesarios
-      },
-    );
 
     try {
-      await _videoPlayerController.initialize();
-      // Resto del código...
-    } catch (e, stackTrace) {
-      print('Error al inicializar el reproductor: $e');
-      print('Stack trace: $stackTrace');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al cargar el video'),
-          backgroundColor: Colors.red,
-        ),
+      // Intenta primero con el video original
+      final streamUrl = apiService.getStreamUrl(widget.movie.id);
+      _videoPlayerController = VideoPlayerController.networkUrl(
+        streamUrl,
+        httpHeaders: {
+          'Accept-Ranges': 'bytes',
+        },
       );
-      setState(() {
-        _hasError = true;
-      });
+      await _videoPlayerController.initialize();
+
+      _configureChewieController();
+    } catch (e) {
+      print('Error con video original: $e');
+
+      // Si falla, intenta con video transcodificado
+      try {
+        // Limpiar el controlador anterior
+        await _videoPlayerController.dispose();
+
+        final transcodedUrl =
+            apiService.getStreamUrl(widget.movie.id, transcode: true);
+        _videoPlayerController =
+            VideoPlayerController.networkUrl(transcodedUrl);
+        await _videoPlayerController.initialize();
+
+        _configureChewieController();
+
+        // ignore: use_build_context_synchronously
+        print('Error on Movies: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error on Movies: $e')),
+        );
+      } catch (e) {
+        setState(() {
+          _hasError = true;
+        });
+        // Mostrar mensaje de error
+        // ignore: use_build_context_synchronously
+        print('Error on Movies: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error on Movies: $e')),
+        );
+      }
     }
   }
 
