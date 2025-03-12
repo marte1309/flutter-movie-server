@@ -10,12 +10,6 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
-    dependencies {
-        implementation 'com.google.android.exoplayer:exoplayer-core:2.18.1'
-        implementation 'com.google.android.exoplayer:exoplayer-ui:2.18.1'
-        implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.18.1'
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
