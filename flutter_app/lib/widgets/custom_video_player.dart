@@ -8,11 +8,17 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 class CustomVideoPlayer extends StatefulWidget {
   final VideoPlayerController controller;
   final bool autoPlay;
+  final VoidCallback? onVideoEnd;
+  final VoidCallback? onNextEpisode;
+  final VoidCallback? onPreviousEpisode;
 
   const CustomVideoPlayer({
     Key? key,
     required this.controller,
     this.autoPlay = true,
+    this.onVideoEnd,
+    this.onNextEpisode,
+    this.onPreviousEpisode,
   }) : super(key: key);
 
   @override
@@ -26,6 +32,18 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   Timer? _hideControlsTimer;
   double _seekBarValue = 0.0;
   bool _isDragging = false;
+
+  // Opciones simuladas para las pistas de audio y subtítulos
+  final List<String> _audioTracks = ['Español', 'Inglés', 'Japonés', 'Ninguno'];
+  String _selectedAudioTrack = 'Español';
+
+  final List<String> _subtitleTracks = [
+    'Español',
+    'Inglés',
+    'Francés',
+    'Ninguno'
+  ];
+  String _selectedSubtitleTrack = 'Ninguno';
 
   @override
   void initState() {
@@ -59,6 +77,12 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
         _isPlaying = false;
         _showControls = true;
       });
+
+      // Llamar al callback onVideoEnd si está definido
+      if (widget.onVideoEnd != null) {
+        // Pequeño retraso para permitir que el último fotograma se muestre
+        Future.delayed(Duration(seconds: 1), widget.onVideoEnd);
+      }
     }
 
     if (!_isDragging && _controller.value.isPlaying) {
@@ -123,6 +147,102 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
     _controller.seekTo(position);
   }
 
+  void _showAudioOptionsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.black87,
+          title: Text('Pistas de audio', style: TextStyle(color: Colors.white)),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _audioTracks.length,
+              itemBuilder: (context, index) {
+                final track = _audioTracks[index];
+                return ListTile(
+                  title: Text(track, style: TextStyle(color: Colors.white)),
+                  leading: Radio<String>(
+                    value: track,
+                    groupValue: _selectedAudioTrack,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedAudioTrack = value!;
+                      });
+                      Navigator.of(context).pop();
+                      // Aquí iría la lógica real para cambiar la pista de audio
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Pista de audio cambiada a: $value')));
+                    },
+                    activeColor: Colors.blue,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _selectedAudioTrack = track;
+                    });
+                    Navigator.of(context).pop();
+                    // Aquí iría la lógica real para cambiar la pista de audio
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Pista de audio cambiada a: $track')));
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    ).then((_) => _startHideControlsTimer());
+  }
+
+  void _showSubtitlesDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.black87,
+          title: Text('Subtítulos', style: TextStyle(color: Colors.white)),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _subtitleTracks.length,
+              itemBuilder: (context, index) {
+                final track = _subtitleTracks[index];
+                return ListTile(
+                  title: Text(track, style: TextStyle(color: Colors.white)),
+                  leading: Radio<String>(
+                    value: track,
+                    groupValue: _selectedSubtitleTrack,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedSubtitleTrack = value!;
+                      });
+                      Navigator.of(context).pop();
+                      // Aquí iría la lógica real para cambiar los subtítulos
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Subtítulos cambiados a: $value')));
+                    },
+                    activeColor: Colors.blue,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _selectedSubtitleTrack = track;
+                    });
+                    Navigator.of(context).pop();
+                    // Aquí iría la lógica real para cambiar los subtítulos
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Subtítulos cambiados a: $track')));
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    ).then((_) => _startHideControlsTimer());
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -163,8 +283,46 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      PopupMenuButton<String>(
+                        icon: Icon(Icons.settings, color: Colors.white),
+                        onSelected: (String choice) {
+                          // Manejar la selección del menú
+                          if (choice == 'audio') {
+                            _showAudioOptionsDialog(context);
+                          } else if (choice == 'subtitles') {
+                            _showSubtitlesDialog(context);
+                          }
+                        },
+                        color: Colors.black87,
+                        itemBuilder: (BuildContext context) {
+                          return [
+                            PopupMenuItem<String>(
+                              value: 'audio',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.audiotrack, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text('Pistas de audio',
+                                      style: TextStyle(color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'subtitles',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.subtitles, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text('Subtítulos',
+                                      style: TextStyle(color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                          ];
+                        },
+                      ),
                       IconButton(
                         icon: Icon(Icons.fullscreen, color: Colors.white),
                         onPressed: () {
@@ -235,6 +393,13 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          // Botón de episodio anterior
+                          IconButton(
+                            icon:
+                                Icon(Icons.skip_previous, color: Colors.white),
+                            onPressed: widget.onPreviousEpisode,
+                            tooltip: "Episodio anterior",
+                          ),
                           IconButton(
                             icon: Icon(Icons.replay_10, color: Colors.white),
                             onPressed: () {
@@ -245,6 +410,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                                   : newPosition);
                               _startHideControlsTimer();
                             },
+                            tooltip: "Retroceder 10 segundos",
                           ),
                           IconButton(
                             iconSize: 60,
@@ -267,6 +433,13 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                                   : newPosition);
                               _startHideControlsTimer();
                             },
+                            tooltip: "Avanzar 10 segundos",
+                          ),
+                          // Botón de siguiente episodio
+                          IconButton(
+                            icon: Icon(Icons.skip_next, color: Colors.white),
+                            onPressed: widget.onNextEpisode,
+                            tooltip: "Siguiente episodio",
                           ),
                         ],
                       ),

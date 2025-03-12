@@ -23,6 +23,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
   bool _hasError = false;
   String _errorMessage = '';
 
+  // Simulación de una lista de episodios para la navegación
+  int _currentEpisodeIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -87,6 +90,66 @@ class _PlayerScreenState extends State<PlayerScreen> {
     }
   }
 
+  void _handleNextEpisode() {
+    // En una implementación real, aquí cargarías el siguiente episodio
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Siguiente episodio no disponible'),
+      duration: Duration(seconds: 2),
+    ));
+
+    // Simulación - incrementar el índice actual
+    setState(() {
+      _currentEpisodeIndex++;
+    });
+
+    // Ejemplo de cómo se podría implementar
+    /*
+    if (_currentEpisodeIndex < episodesList.length - 1) {
+      setState(() {
+        _currentEpisodeIndex++;
+        _isInitialized = false;
+      });
+      
+      // Liberar recursos del controlador actual
+      _videoPlayerController.dispose();
+      
+      // Cargar el nuevo episodio
+      _loadEpisode(episodesList[_currentEpisodeIndex]);
+    }
+    */
+  }
+
+  void _handlePreviousEpisode() {
+    // En una implementación real, aquí cargarías el episodio anterior
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Episodio anterior no disponible'),
+      duration: Duration(seconds: 2),
+    ));
+
+    // Simulación - decrementar el índice actual
+    setState(() {
+      if (_currentEpisodeIndex > 0) {
+        _currentEpisodeIndex--;
+      }
+    });
+
+    // Ejemplo de cómo se podría implementar
+    /*
+    if (_currentEpisodeIndex > 0) {
+      setState(() {
+        _currentEpisodeIndex--;
+        _isInitialized = false;
+      });
+      
+      // Liberar recursos del controlador actual
+      _videoPlayerController.dispose();
+      
+      // Cargar el nuevo episodio
+      _loadEpisode(episodesList[_currentEpisodeIndex]);
+    }
+    */
+  }
+
   @override
   void dispose() {
     // Restaurar UI y orientación
@@ -110,6 +173,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   : CustomVideoPlayer(
                       controller: _videoPlayerController,
                       autoPlay: true,
+                      onVideoEnd: () {
+                        // Regresar a la pantalla anterior cuando termina el video
+                        Navigator.of(context).pop();
+                      },
+                      onNextEpisode: _handleNextEpisode,
+                      onPreviousEpisode: _handlePreviousEpisode,
                     ),
         ),
       ),
