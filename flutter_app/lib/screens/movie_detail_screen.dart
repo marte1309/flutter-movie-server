@@ -13,7 +13,8 @@ class MovieDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final apiService = Provider.of<ApiService>(context);
-    final thumbnailUrl = apiService.getThumbnailUrl(movie.id);
+    final baseUrl = apiService.baseUrl;
+    final thumbnailUrl = '$baseUrl${movie.poster}';
 
     return Scaffold(
       appBar: AppBar(

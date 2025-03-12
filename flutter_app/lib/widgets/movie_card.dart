@@ -17,7 +17,8 @@ class MovieCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final apiService = Provider.of<ApiService>(context);
-    final thumbnailUrl = movie.poster ?? apiService.getThumbnailUrl(movie.id);
+    final baseUrl = apiService.baseUrl;
+    final thumbnailUrl = '$baseUrl${movie.poster}';
 
     return InkWell(
       borderRadius: BorderRadius.circular(15.0),
