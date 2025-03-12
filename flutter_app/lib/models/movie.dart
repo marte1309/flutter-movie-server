@@ -7,6 +7,7 @@ class Movie {
   final DateTime addedAt;
   final int? duration;
   final int? year;
+  final String? poster;
 
   Movie({
     required this.id,
@@ -16,6 +17,7 @@ class Movie {
     required this.addedAt,
     this.duration = 0,
     this.year = 0,
+    this.poster,
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,9 @@ class Movie {
       path: json['path'],
       format: json['format'],
       addedAt: DateTime.parse(json['addedAt']),
+      duration: json['duration'],
+      year: json['year'],
+      poster: json['poster'],
     );
   }
 
@@ -35,6 +40,9 @@ class Movie {
       'path': path,
       'format': format,
       'addedAt': addedAt.toIso8601String(),
+      'duration': duration,
+      'year': year,
+      'poster': poster,
     };
   }
 }

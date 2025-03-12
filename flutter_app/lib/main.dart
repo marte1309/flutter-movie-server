@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:fvp/fvp.dart' as fvp;
 import 'screens/home_screen.dart';
 import 'services/api_service.dart';
 import 'services/device_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  fvp.registerWith();
   await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
@@ -26,11 +27,11 @@ class MyApp extends StatelessWidget {
           } catch (e) {
             print("Error al crear ApiService: $e");
             // Retorna una versión fallback o con una URL hardcodeada
-            return ApiService(baseUrl: 'http://192.168.101.106:8084/api');
+            return ApiService();
           }
         },
         child: MaterialApp(
-          title: 'Mi Colección de Películas',
+          title: 'MMovies',
           theme: ThemeData(
             primarySwatch: Colors.indigo,
             brightness: Brightness.dark,
@@ -67,7 +68,7 @@ class _OrientationHandlerState extends State<OrientationHandler> {
   }
 
   Future<void> _setOrientation() async {
-    try {
+/*     try {
       final isTV = await DeviceService.isTV(context);
 
       if (isTV) {
@@ -92,7 +93,8 @@ class _OrientationHandlerState extends State<OrientationHandler> {
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
       ]);
-    }
+    } */
+    print("holi");
   }
 
   @override

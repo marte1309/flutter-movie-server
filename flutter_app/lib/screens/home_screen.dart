@@ -15,6 +15,17 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Movie>> _moviesFuture;
 
+  // Get the number of cards per row based on screen width
+  int _getCardsPerRow(double width) {
+    if (width > 1200) {
+      return 6;
+    } else if (width > 900) {
+      return 4;
+    } else {
+      return 3;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mi Colección de Películas'),
+        title: Text('MMovies'),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
@@ -105,7 +116,9 @@ class _HomeScreenState extends State<HomeScreen> {
           return GridView.builder(
             padding: EdgeInsets.all(16.0),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+              crossAxisCount:
+                  _getCardsPerRow(MediaQuery.of(context).size.width),
+              childAspectRatio: 2 / 3,
               crossAxisSpacing: 16.0,
               mainAxisSpacing: 16.0,
             ),

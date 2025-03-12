@@ -23,7 +23,7 @@ export const getMovieById = (req: Request, res: Response): void => {
 };
 
 export const addMovie = (req: Request, res: Response): void => {
-  const { title, path, format } = req.body;
+  const { title, path, format, poster } = req.body;
 
   if (!title || !path) {
     res.status(400).json({ message: "Se requiere título y ruta" });
@@ -36,6 +36,7 @@ export const addMovie = (req: Request, res: Response): void => {
     path,
     format: format || path.split(".").pop() || "",
     addedAt: new Date().toISOString(),
+    poster: poster || "",
   };
 
   movies.push(newMovie);
@@ -105,4 +106,11 @@ export const scanDirectory = async (
       error: error instanceof Error ? error.message : String(error),
     });
   }
+};
+
+export const getMovieThumbnail = (req: Request, res: Response): void => {
+  const filename = req.params.filename.replace(/\.\./g, "").replace(/\//g, "");
+  const filePath = config.THUMBNAILS_DIR + "/" + filename;
+
+  res.sendFile(filePath, { headers: { "Content-Type": "image/webp" } });
 };

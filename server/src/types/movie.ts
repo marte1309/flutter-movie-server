@@ -4,6 +4,10 @@ export interface Movie {
   path: string;
   format: string;
   size?: number;
+  parentDir?: string;
+  poster?: string;
+  duration?: number;
+  year?: number;
   addedAt: string;
   lastModified?: Date;
 }
@@ -13,5 +17,9 @@ export interface ScanResult {
   path: string;
   format: string;
   size: number;
+  parentDir?: string;
+  duration?: number;
+  year?: number;
+  poster?: string;
   lastModified: Date;
 }
