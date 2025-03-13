@@ -267,7 +267,8 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
         _startHideControlsTimer();
       } else if (event.logicalKey == LogicalKeyboardKey.escape ||
           event.logicalKey == LogicalKeyboardKey.backspace ||
-          event.logicalKey == LogicalKeyboardKey.mediaStop) {
+          event.logicalKey == LogicalKeyboardKey.mediaStop ||
+          event.logicalKey == PhysicalKeyboardKey.mediaStop) {
         // Salir del reproductor
         Navigator.of(context).pop();
       }
