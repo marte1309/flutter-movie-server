@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -243,253 +244,292 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
     ).then((_) => _startHideControlsTimer());
   }
 
+  // Manejar eventos de teclado
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.space ||
+          event.logicalKey == LogicalKeyboardKey.select) {
+        _togglePlayPause();
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        final newPosition = _controller.value.position - Duration(seconds: 10);
+        _controller
+            .seekTo(newPosition < Duration.zero ? Duration.zero : newPosition);
+        if (!_showControls) setState(() => _showControls = true);
+        _startHideControlsTimer();
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        final newPosition = _controller.value.position + Duration(seconds: 10);
+        final duration = _controller.value.duration;
+        _controller.seekTo(newPosition > duration ? duration : newPosition);
+        if (!_showControls) setState(() => _showControls = true);
+        _startHideControlsTimer();
+      } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+        // Salir del reproductor
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _toggleControls,
-      child: Stack(
-        children: [
-          // Video Player
-          Center(
-            child: AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            ),
-          ),
-
-          // Controles
-          if (_showControls)
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.7),
-                    Colors.transparent,
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.7),
-                  ],
-                ),
+    return KeyboardListener(
+      focusNode: FocusNode(),
+      autofocus: true,
+      onKeyEvent: _handleKeyEvent,
+      child: GestureDetector(
+        onTap: _toggleControls,
+        child: Stack(
+          children: [
+            // Video Player
+            Center(
+              child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
               ),
             ),
 
-          // Botones de control
-          if (_showControls)
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Barra superior
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Controles
+            if (_showControls)
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.7),
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.7),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Botones de control
+            if (_showControls)
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Barra superior
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Focus(
+                          child: PopupMenuButton<String>(
+                            icon: Icon(Icons.settings, color: Colors.white),
+                            onSelected: (String choice) {
+                              // Manejar la selección del menú
+                              if (choice == 'audio') {
+                                _showAudioOptionsDialog(context);
+                              } else if (choice == 'subtitles') {
+                                _showSubtitlesDialog(context);
+                              }
+                            },
+                            color: Colors.black87,
+                            itemBuilder: (BuildContext context) {
+                              return [
+                                PopupMenuItem<String>(
+                                  value: 'audio',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.audiotrack,
+                                          color: Colors.white),
+                                      SizedBox(width: 8),
+                                      Text('Pistas de audio',
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem<String>(
+                                  value: 'subtitles',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.subtitles,
+                                          color: Colors.white),
+                                      SizedBox(width: 8),
+                                      Text('Subtítulos',
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                    ],
+                                  ),
+                                ),
+                              ];
+                            },
+                            tooltip: "Configuración",
+                            iconColor: Colors.blue.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        Focus(
+                          child: IconButton(
+                            icon: Icon(Icons.fullscreen, color: Colors.white),
+                            onPressed: () {
+                              // La pantalla completa ya es manejada por la pantalla
+                            },
+                            tooltip: "Pantalla completa",
+                            focusColor: Colors.blue.withValues(alpha: 0.3),
+                            hoverColor: Colors.blue.withValues(alpha: 0.3),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Barra de controles inferior
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Focus(
-                        child: PopupMenuButton<String>(
-                          icon: Icon(Icons.settings, color: Colors.white),
-                          onSelected: (String choice) {
-                            // Manejar la selección del menú
-                            if (choice == 'audio') {
-                              _showAudioOptionsDialog(context);
-                            } else if (choice == 'subtitles') {
-                              _showSubtitlesDialog(context);
-                            }
-                          },
-                          color: Colors.black87,
-                          itemBuilder: (BuildContext context) {
-                            return [
-                              PopupMenuItem<String>(
-                                value: 'audio',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.audiotrack, color: Colors.white),
-                                    SizedBox(width: 8),
-                                    Text('Pistas de audio',
-                                        style: TextStyle(color: Colors.white)),
-                                  ],
+                      // Barra de progreso
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            Text(
+                              _formatDuration(_controller.value.position),
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  thumbShape: RoundSliderThumbShape(
+                                      enabledThumbRadius: 8.0),
+                                  overlayShape: RoundSliderOverlayShape(
+                                      overlayRadius: 16.0),
+                                  trackHeight: 4.0,
+                                  activeTrackColor: Colors.red,
+                                  inactiveTrackColor:
+                                      Colors.white.withValues(alpha: 0.3),
+                                  thumbColor: Colors.red,
+                                ),
+                                child: Slider(
+                                  value: _seekBarValue.clamp(0.0, 1.0),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _seekBarValue = value;
+                                      _isDragging = true;
+                                    });
+                                  },
+                                  onChangeStart: (value) {
+                                    _isDragging = true;
+                                    _hideControlsTimer?.cancel();
+                                  },
+                                  onChangeEnd: (value) {
+                                    _isDragging = false;
+                                    _seekToRelative(value);
+                                    _startHideControlsTimer();
+                                  },
                                 ),
                               ),
-                              PopupMenuItem<String>(
-                                value: 'subtitles',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.subtitles, color: Colors.white),
-                                    SizedBox(width: 8),
-                                    Text('Subtítulos',
-                                        style: TextStyle(color: Colors.white)),
-                                  ],
-                                ),
-                              ),
-                            ];
-                          },
-                          tooltip: "Configuración",
-                          iconColor: Colors.blue.withValues(alpha: 0.3),
+                            ),
+                            Text(
+                              _formatDuration(_controller.value.duration),
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
                         ),
                       ),
-                      Focus(
-                        child: IconButton(
-                          icon: Icon(Icons.fullscreen, color: Colors.white),
-                          onPressed: () {
-                            // La pantalla completa ya es manejada por la pantalla
-                          },
-                          tooltip: "Pantalla completa",
-                          focusColor: Colors.blue.withValues(alpha: 0.3),
-                          hoverColor: Colors.blue.withValues(alpha: 0.3),
+
+                      // Botones principales
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            // Botón de episodio anterior
+                            Focus(
+                              autofocus: false,
+                              child: IconButton(
+                                icon: Icon(Icons.skip_previous,
+                                    color: Colors.white),
+                                onPressed: widget.onPreviousEpisode,
+                                tooltip: "Episodio anterior",
+                                focusColor: Colors.blue.withValues(alpha: 0.3),
+                                hoverColor: Colors.blue.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            Focus(
+                              autofocus: false,
+                              child: IconButton(
+                                icon:
+                                    Icon(Icons.replay_10, color: Colors.white),
+                                onPressed: () {
+                                  final newPosition =
+                                      _controller.value.position -
+                                          Duration(seconds: 10);
+                                  _controller.seekTo(newPosition < Duration.zero
+                                      ? Duration.zero
+                                      : newPosition);
+                                  _startHideControlsTimer();
+                                },
+                                tooltip: "Retroceder 10 segundos",
+                                focusColor: Colors.blue.withValues(alpha: 0.3),
+                                hoverColor: Colors.blue.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            Focus(
+                              autofocus:
+                                  true, // Autofocar este botón cuando aparecen los controles
+                              child: IconButton(
+                                iconSize: 60,
+                                icon: Icon(
+                                  _isPlaying
+                                      ? Icons.pause_circle_filled
+                                      : Icons.play_circle_filled,
+                                  color: Colors.white,
+                                ),
+                                onPressed: _togglePlayPause,
+                                focusColor: Colors.blue.withValues(alpha: 0.3),
+                                hoverColor: Colors.blue.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            Focus(
+                              autofocus: false,
+                              child: IconButton(
+                                icon:
+                                    Icon(Icons.forward_10, color: Colors.white),
+                                onPressed: () {
+                                  final newPosition =
+                                      _controller.value.position +
+                                          Duration(seconds: 10);
+                                  final duration = _controller.value.duration;
+                                  _controller.seekTo(newPosition > duration
+                                      ? duration
+                                      : newPosition);
+                                  _startHideControlsTimer();
+                                },
+                                tooltip: "Avanzar 10 segundos",
+                                focusColor: Colors.blue.withValues(alpha: 0.3),
+                                hoverColor: Colors.blue.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            // Botón de siguiente episodio
+                            Focus(
+                              autofocus: false,
+                              child: IconButton(
+                                icon:
+                                    Icon(Icons.skip_next, color: Colors.white),
+                                onPressed: widget.onNextEpisode,
+                                tooltip: "Siguiente episodio",
+                                focusColor: Colors.blue.withValues(alpha: 0.3),
+                                hoverColor: Colors.blue.withValues(alpha: 0.3),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
+                ],
+              ),
 
-                // Barra de controles inferior
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Barra de progreso
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        children: [
-                          Text(
-                            _formatDuration(_controller.value.position),
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          Expanded(
-                            child: SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                thumbShape: RoundSliderThumbShape(
-                                    enabledThumbRadius: 8.0),
-                                overlayShape: RoundSliderOverlayShape(
-                                    overlayRadius: 16.0),
-                                trackHeight: 4.0,
-                                activeTrackColor: Colors.red,
-                                inactiveTrackColor:
-                                    Colors.white.withValues(alpha: 0.3),
-                                thumbColor: Colors.red,
-                              ),
-                              child: Slider(
-                                value: _seekBarValue.clamp(0.0, 1.0),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _seekBarValue = value;
-                                    _isDragging = true;
-                                  });
-                                },
-                                onChangeStart: (value) {
-                                  _isDragging = true;
-                                  _hideControlsTimer?.cancel();
-                                },
-                                onChangeEnd: (value) {
-                                  _isDragging = false;
-                                  _seekToRelative(value);
-                                  _startHideControlsTimer();
-                                },
-                              ),
-                            ),
-                          ),
-                          Text(
-                            _formatDuration(_controller.value.duration),
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Botones principales
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          // Botón de episodio anterior
-                          Focus(
-                            autofocus: false,
-                            child: IconButton(
-                              icon: Icon(Icons.skip_previous,
-                                  color: Colors.white),
-                              onPressed: widget.onPreviousEpisode,
-                              tooltip: "Episodio anterior",
-                              focusColor: Colors.blue.withValues(alpha: 0.3),
-                              hoverColor: Colors.blue.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          Focus(
-                            autofocus: false,
-                            child: IconButton(
-                              icon: Icon(Icons.replay_10, color: Colors.white),
-                              onPressed: () {
-                                final newPosition = _controller.value.position -
-                                    Duration(seconds: 10);
-                                _controller.seekTo(newPosition < Duration.zero
-                                    ? Duration.zero
-                                    : newPosition);
-                                _startHideControlsTimer();
-                              },
-                              tooltip: "Retroceder 10 segundos",
-                              focusColor: Colors.blue.withValues(alpha: 0.3),
-                              hoverColor: Colors.blue.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          Focus(
-                            autofocus:
-                                true, // Autofocar este botón cuando aparecen los controles
-                            child: IconButton(
-                              iconSize: 60,
-                              icon: Icon(
-                                _isPlaying
-                                    ? Icons.pause_circle_filled
-                                    : Icons.play_circle_filled,
-                                color: Colors.white,
-                              ),
-                              onPressed: _togglePlayPause,
-                              focusColor: Colors.blue.withValues(alpha: 0.3),
-                              hoverColor: Colors.blue.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          Focus(
-                            autofocus: false,
-                            child: IconButton(
-                              icon: Icon(Icons.forward_10, color: Colors.white),
-                              onPressed: () {
-                                final newPosition = _controller.value.position +
-                                    Duration(seconds: 10);
-                                final duration = _controller.value.duration;
-                                _controller.seekTo(newPosition > duration
-                                    ? duration
-                                    : newPosition);
-                                _startHideControlsTimer();
-                              },
-                              tooltip: "Avanzar 10 segundos",
-                              focusColor: Colors.blue.withValues(alpha: 0.3),
-                              hoverColor: Colors.blue.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          // Botón de siguiente episodio
-                          Focus(
-                            autofocus: false,
-                            child: IconButton(
-                              icon: Icon(Icons.skip_next, color: Colors.white),
-                              onPressed: widget.onNextEpisode,
-                              tooltip: "Siguiente episodio",
-                              focusColor: Colors.blue.withValues(alpha: 0.3),
-                              hoverColor: Colors.blue.withValues(alpha: 0.3),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-          // Indicador de carga
-          if (_controller.value.isBuffering)
-            Center(
-              child: CircularProgressIndicator(),
-            ),
-        ],
+            // Indicador de carga
+            if (_controller.value.isBuffering)
+              Center(
+                child: CircularProgressIndicator(),
+              ),
+          ],
+        ),
       ),
     );
   }
