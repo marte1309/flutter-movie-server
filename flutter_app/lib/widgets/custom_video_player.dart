@@ -13,13 +13,13 @@ class CustomVideoPlayer extends StatefulWidget {
   final VoidCallback? onPreviousEpisode;
 
   const CustomVideoPlayer({
-    Key? key,
+    super.key,
     required this.controller,
     this.autoPlay = true,
     this.onVideoEnd,
     this.onNextEpisode,
     this.onPreviousEpisode,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomVideoPlayer> createState() => _CustomVideoPlayerState();
@@ -154,7 +154,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
         return AlertDialog(
           backgroundColor: Colors.black87,
           title: Text('Pistas de audio', style: TextStyle(color: Colors.white)),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
@@ -202,7 +202,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
         return AlertDialog(
           backgroundColor: Colors.black87,
           title: Text('Subtítulos', style: TextStyle(color: Colors.white)),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
@@ -285,49 +285,58 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      PopupMenuButton<String>(
-                        icon: Icon(Icons.settings, color: Colors.white),
-                        onSelected: (String choice) {
-                          // Manejar la selección del menú
-                          if (choice == 'audio') {
-                            _showAudioOptionsDialog(context);
-                          } else if (choice == 'subtitles') {
-                            _showSubtitlesDialog(context);
-                          }
-                        },
-                        color: Colors.black87,
-                        itemBuilder: (BuildContext context) {
-                          return [
-                            PopupMenuItem<String>(
-                              value: 'audio',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.audiotrack, color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text('Pistas de audio',
-                                      style: TextStyle(color: Colors.white)),
-                                ],
+                      Focus(
+                        child: PopupMenuButton<String>(
+                          icon: Icon(Icons.settings, color: Colors.white),
+                          onSelected: (String choice) {
+                            // Manejar la selección del menú
+                            if (choice == 'audio') {
+                              _showAudioOptionsDialog(context);
+                            } else if (choice == 'subtitles') {
+                              _showSubtitlesDialog(context);
+                            }
+                          },
+                          color: Colors.black87,
+                          itemBuilder: (BuildContext context) {
+                            return [
+                              PopupMenuItem<String>(
+                                value: 'audio',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.audiotrack, color: Colors.white),
+                                    SizedBox(width: 8),
+                                    Text('Pistas de audio',
+                                        style: TextStyle(color: Colors.white)),
+                                  ],
+                                ),
                               ),
-                            ),
-                            PopupMenuItem<String>(
-                              value: 'subtitles',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.subtitles, color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text('Subtítulos',
-                                      style: TextStyle(color: Colors.white)),
-                                ],
+                              PopupMenuItem<String>(
+                                value: 'subtitles',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.subtitles, color: Colors.white),
+                                    SizedBox(width: 8),
+                                    Text('Subtítulos',
+                                        style: TextStyle(color: Colors.white)),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ];
-                        },
+                            ];
+                          },
+                          tooltip: "Configuración",
+                          iconColor: Colors.blue.withValues(alpha: 0.3),
+                        ),
                       ),
-                      IconButton(
-                        icon: Icon(Icons.fullscreen, color: Colors.white),
-                        onPressed: () {
-                          // La pantalla completa ya es manejada por la pantalla
-                        },
+                      Focus(
+                        child: IconButton(
+                          icon: Icon(Icons.fullscreen, color: Colors.white),
+                          onPressed: () {
+                            // La pantalla completa ya es manejada por la pantalla
+                          },
+                          tooltip: "Pantalla completa",
+                          focusColor: Colors.blue.withValues(alpha: 0.3),
+                          hoverColor: Colors.blue.withValues(alpha: 0.3),
+                        ),
                       ),
                     ],
                   ),
@@ -356,7 +365,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                                 trackHeight: 4.0,
                                 activeTrackColor: Colors.red,
                                 inactiveTrackColor:
-                                    Colors.white.withOpacity(0.3),
+                                    Colors.white.withValues(alpha: 0.3),
                                 thumbColor: Colors.red,
                               ),
                               child: Slider(
@@ -394,52 +403,78 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           // Botón de episodio anterior
-                          IconButton(
-                            icon:
-                                Icon(Icons.skip_previous, color: Colors.white),
-                            onPressed: widget.onPreviousEpisode,
-                            tooltip: "Episodio anterior",
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.replay_10, color: Colors.white),
-                            onPressed: () {
-                              final newPosition = _controller.value.position -
-                                  Duration(seconds: 10);
-                              _controller.seekTo(newPosition < Duration.zero
-                                  ? Duration.zero
-                                  : newPosition);
-                              _startHideControlsTimer();
-                            },
-                            tooltip: "Retroceder 10 segundos",
-                          ),
-                          IconButton(
-                            iconSize: 60,
-                            icon: Icon(
-                              _isPlaying
-                                  ? Icons.pause_circle_filled
-                                  : Icons.play_circle_filled,
-                              color: Colors.white,
+                          Focus(
+                            autofocus: false,
+                            child: IconButton(
+                              icon: Icon(Icons.skip_previous,
+                                  color: Colors.white),
+                              onPressed: widget.onPreviousEpisode,
+                              tooltip: "Episodio anterior",
+                              focusColor: Colors.blue.withValues(alpha: 0.3),
+                              hoverColor: Colors.blue.withValues(alpha: 0.3),
                             ),
-                            onPressed: _togglePlayPause,
                           ),
-                          IconButton(
-                            icon: Icon(Icons.forward_10, color: Colors.white),
-                            onPressed: () {
-                              final newPosition = _controller.value.position +
-                                  Duration(seconds: 10);
-                              final duration = _controller.value.duration;
-                              _controller.seekTo(newPosition > duration
-                                  ? duration
-                                  : newPosition);
-                              _startHideControlsTimer();
-                            },
-                            tooltip: "Avanzar 10 segundos",
+                          Focus(
+                            autofocus: false,
+                            child: IconButton(
+                              icon: Icon(Icons.replay_10, color: Colors.white),
+                              onPressed: () {
+                                final newPosition = _controller.value.position -
+                                    Duration(seconds: 10);
+                                _controller.seekTo(newPosition < Duration.zero
+                                    ? Duration.zero
+                                    : newPosition);
+                                _startHideControlsTimer();
+                              },
+                              tooltip: "Retroceder 10 segundos",
+                              focusColor: Colors.blue.withValues(alpha: 0.3),
+                              hoverColor: Colors.blue.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          Focus(
+                            autofocus:
+                                true, // Autofocar este botón cuando aparecen los controles
+                            child: IconButton(
+                              iconSize: 60,
+                              icon: Icon(
+                                _isPlaying
+                                    ? Icons.pause_circle_filled
+                                    : Icons.play_circle_filled,
+                                color: Colors.white,
+                              ),
+                              onPressed: _togglePlayPause,
+                              focusColor: Colors.blue.withValues(alpha: 0.3),
+                              hoverColor: Colors.blue.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          Focus(
+                            autofocus: false,
+                            child: IconButton(
+                              icon: Icon(Icons.forward_10, color: Colors.white),
+                              onPressed: () {
+                                final newPosition = _controller.value.position +
+                                    Duration(seconds: 10);
+                                final duration = _controller.value.duration;
+                                _controller.seekTo(newPosition > duration
+                                    ? duration
+                                    : newPosition);
+                                _startHideControlsTimer();
+                              },
+                              tooltip: "Avanzar 10 segundos",
+                              focusColor: Colors.blue.withValues(alpha: 0.3),
+                              hoverColor: Colors.blue.withValues(alpha: 0.3),
+                            ),
                           ),
                           // Botón de siguiente episodio
-                          IconButton(
-                            icon: Icon(Icons.skip_next, color: Colors.white),
-                            onPressed: widget.onNextEpisode,
-                            tooltip: "Siguiente episodio",
+                          Focus(
+                            autofocus: false,
+                            child: IconButton(
+                              icon: Icon(Icons.skip_next, color: Colors.white),
+                              onPressed: widget.onNextEpisode,
+                              tooltip: "Siguiente episodio",
+                              focusColor: Colors.blue.withValues(alpha: 0.3),
+                              hoverColor: Colors.blue.withValues(alpha: 0.3),
+                            ),
                           ),
                         ],
                       ),
