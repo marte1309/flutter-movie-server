@@ -1,4 +1,6 @@
 // lib/screens/movie_detail_screen.dart
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/movie.dart';
@@ -16,6 +18,10 @@ class MovieDetailScreen extends StatelessWidget {
     final baseUrl = apiService.baseUrl;
     final thumbnailUrl = '$baseUrl${movie.poster}';
 
+    // Get the size of the screen
+    final size = MediaQuery.of(context).size;
+    final imageContainerHeight = size.height * 0.4;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(movie.title),
@@ -24,22 +30,28 @@ class MovieDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Image.network(
-                thumbnailUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[800],
-                    child: Center(
-                      child: Icon(
-                        Icons.movie,
-                        size: 50,
-                        color: Colors.white54,
-                      ),
-                    ),
-                  );
-                },
+            Column(children: [
+              Container(
+                height: imageContainerHeight,
+                color: Colors.grey[800],
+                child: Center(
+                  child: Image.network(
+                    thumbnailUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[800],
+                        child: Center(
+                          child: Icon(
+                            Icons.movie,
+                            size: 50,
+                            color: Colors.white54,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
               SizedBox(width: 16),
               Column(
