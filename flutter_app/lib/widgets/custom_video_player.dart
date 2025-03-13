@@ -99,7 +99,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
 
   void _startHideControlsTimer() {
     _hideControlsTimer?.cancel();
-    _hideControlsTimer = Timer(Duration(seconds: 3), () {
+    _hideControlsTimer = Timer(Duration(seconds: 4), () {
       if (_isPlaying && mounted) {
         setState(() => _showControls = false);
       }
@@ -248,21 +248,26 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   void _handleKeyEvent(KeyEvent event) {
     if (event is KeyDownEvent) {
       if (event.logicalKey == LogicalKeyboardKey.space ||
-          event.logicalKey == LogicalKeyboardKey.select) {
+          event.logicalKey == LogicalKeyboardKey.select ||
+          event.logicalKey == PhysicalKeyboardKey.mediaPlayPause) {
         _togglePlayPause();
-      } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      } else if (event.logicalKey == PhysicalKeyboardKey.mediaTrackPrevious &&
+          !_isDragging) {
         final newPosition = _controller.value.position - Duration(seconds: 10);
         _controller
             .seekTo(newPosition < Duration.zero ? Duration.zero : newPosition);
         if (!_showControls) setState(() => _showControls = true);
         _startHideControlsTimer();
-      } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      } else if (event.logicalKey == PhysicalKeyboardKey.mediaTrackNext &&
+          !_isDragging) {
         final newPosition = _controller.value.position + Duration(seconds: 10);
         final duration = _controller.value.duration;
         _controller.seekTo(newPosition > duration ? duration : newPosition);
         if (!_showControls) setState(() => _showControls = true);
         _startHideControlsTimer();
-      } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+      } else if (event.logicalKey == LogicalKeyboardKey.escape ||
+          event.logicalKey == LogicalKeyboardKey.backspace ||
+          event.logicalKey == LogicalKeyboardKey.mediaStop) {
         // Salir del reproductor
         Navigator.of(context).pop();
       }
