@@ -249,7 +249,12 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
     if (event is KeyDownEvent) {
       if (event.logicalKey == LogicalKeyboardKey.space ||
           event.logicalKey == LogicalKeyboardKey.select ||
-          event.logicalKey == PhysicalKeyboardKey.mediaPlayPause) {
+          event.logicalKey == PhysicalKeyboardKey.mediaPlayPause ||
+          event.logicalKey == PhysicalKeyboardKey.mediaPlay ||
+          event.logicalKey == PhysicalKeyboardKey.mediaPause ||
+          event.logicalKey == LogicalKeyboardKey.mediaPlayPause ||
+          event.logicalKey == LogicalKeyboardKey.mediaPlay ||
+          event.logicalKey == LogicalKeyboardKey.mediaPause) {
         _togglePlayPause();
       } else if (event.logicalKey == PhysicalKeyboardKey.mediaTrackPrevious &&
           !_isDragging) {
